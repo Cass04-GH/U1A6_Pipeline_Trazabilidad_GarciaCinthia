@@ -1,0 +1,414 @@
+[
+    {
+        "id": "ee4b776865ae7776",
+        "type": "tab",
+        "label": "Telemetria IR",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "ddfbf8e49569c219",
+        "type": "serial in",
+        "z": "ee4b776865ae7776",
+        "name": "Arduino",
+        "serial": "94c0a9e79d64c94f",
+        "x": 110,
+        "y": 100,
+        "wires": [
+            [
+                "3656aaac3c931eba",
+                "6275fa18637d7a57"
+            ]
+        ]
+    },
+    {
+        "id": "3656aaac3c931eba",
+        "type": "function",
+        "z": "ee4b776865ae7776",
+        "name": "Parse & Calibracion",
+        "func": "var parts = msg.payload.split(\",\");\nif(parts.length!=3) return null;\n\nvar t = parseInt(parts[0]);\nvar s1 = parseInt(parts[1]);\nvar s2 = parseInt(parts[2]);\n\nglobal.set(\"last_values\",{s1:s1,s2:s2});\n\nvar min_line = global.get(\"min_line\");\nvar max_floor = global.get(\"max_floor\");\n\nvar thr1=0,thr2=0;\nvar norm1=0,norm2=0;\n\nif(min_line && max_floor){\nthr1=(min_line.s1+max_floor.s1)/2;\nthr2=(min_line.s2+max_floor.s2)/2;\n\nnorm1=(s1-min_line.s1)/(max_floor.s1-min_line.s1);\nnorm2=(s2-min_line.s2)/(max_floor.s2-min_line.s2);\n\nnorm1=Math.max(0,Math.min(1,norm1));\nnorm2=Math.max(0,Math.min(1,norm2));\n}\n\nreturn [\n    { payload: s1, topic: \"s1\" },\n    { payload: s2, topic: \"s2\" },\n    { payload: norm1, topic: \"n1\" },\n    { payload: norm2, topic: \"n2\" },\n    { payload: { t: t, s1: s1, s2: s2, n1: norm1, n2: norm2, thr1: thr1, thr2: thr2 } }\n];",
+        "outputs": 5,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 340,
+        "y": 100,
+        "wires": [
+            [
+                "11a464e8eb6ced8b"
+            ],
+            [
+                "8f1ed978df031804"
+            ],
+            [
+                "42605bcf49fbc118"
+            ],
+            [
+                "5f693d60450e97ca"
+            ],
+            [
+                "81714f31280d2d83",
+                "c892021ced975c2c"
+            ]
+        ]
+    },
+    {
+        "id": "42605bcf49fbc118",
+        "type": "ui_gauge",
+        "z": "ee4b776865ae7776",
+        "name": "Norm S1",
+        "group": "e73f65f7d1f41db4",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Norm S1",
+        "label": "0-1",
+        "format": "{{value}}",
+        "min": 0,
+        "max": 1,
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 580,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "5f693d60450e97ca",
+        "type": "ui_gauge",
+        "z": "ee4b776865ae7776",
+        "name": "Norm S2",
+        "group": "e73f65f7d1f41db4",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Norm S2",
+        "label": "0-1",
+        "format": "{{value}}",
+        "min": 0,
+        "max": 1,
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 580,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "81714f31280d2d83",
+        "type": "function",
+        "z": "ee4b776865ae7776",
+        "name": "LINEA/NO LINEA",
+        "func": "var min_line = global.get(\"min_line\");\nvar max_floor = global.get(\"max_floor\");\nif(min_line && max_floor){\nvar thr=(min_line.s1+max_floor.s1)/2;\nif(msg.payload<thr)\nmsg.payload=\"LINEA\";\nelse\nmsg.payload=\"NO LINEA\";\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 570,
+        "y": 280,
+        "wires": [
+            [
+                "3ba242ded41d9c74"
+            ]
+        ]
+    },
+    {
+        "id": "3ba242ded41d9c74",
+        "type": "ui_text",
+        "z": "ee4b776865ae7776",
+        "group": "e73f65f7d1f41db4",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "name": "Estado",
+        "label": "Estado S1",
+        "format": "{{msg.payload}}",
+        "layout": "",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": "",
+        "color": "#000000",
+        "x": 760,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "0bec5d28ab7da5ad",
+        "type": "ui_button",
+        "z": "ee4b776865ae7776",
+        "name": "NEGRO",
+        "group": "e73f65f7d1f41db4",
+        "order": 6,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Capturar NEGRO",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "",
+        "topicType": "str",
+        "x": 150,
+        "y": 200,
+        "wires": [
+            [
+                "37676a6536fd268a"
+            ]
+        ]
+    },
+    {
+        "id": "37676a6536fd268a",
+        "type": "function",
+        "z": "ee4b776865ae7776",
+        "name": "Guardar NEGRO",
+        "func": "var last=global.get(\"last_values\");\nif(!last) return null;\nglobal.set(\"min_line\",last);\nreturn {payload:\"NEGRO guardado\"};",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 340,
+        "y": 200,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "666012106136b167",
+        "type": "ui_button",
+        "z": "ee4b776865ae7776",
+        "name": "BLANCO",
+        "group": "e73f65f7d1f41db4",
+        "order": 7,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Capturar BLANCO",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "",
+        "topicType": "str",
+        "x": 150,
+        "y": 260,
+        "wires": [
+            [
+                "ef646a2960b07577"
+            ]
+        ]
+    },
+    {
+        "id": "ef646a2960b07577",
+        "type": "function",
+        "z": "ee4b776865ae7776",
+        "name": "Guardar BLANCO",
+        "func": "var last=global.get(\"last_values\");\nif(!last) return null;\nglobal.set(\"max_floor\",last);\nreturn {payload:\"BLANCO guardado\"};",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 340,
+        "y": 260,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c892021ced975c2c",
+        "type": "file",
+        "z": "ee4b776865ae7776",
+        "name": "Guardar CSV",
+        "filename": "C:\\Users\\aleja\\OneDrive\\Escritorio\\tttt.csv",
+        "filenameType": "str",
+        "appendNewline": true,
+        "createDir": false,
+        "overwriteFile": "false",
+        "encoding": "utf8",
+        "x": 580,
+        "y": 340,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "11a464e8eb6ced8b",
+        "type": "ui_chart",
+        "z": "ee4b776865ae7776",
+        "name": "S1",
+        "group": "e73f65f7d1f41db4",
+        "order": 5,
+        "width": "0",
+        "height": "0",
+        "label": "S1",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "1023",
+        "removeOlder": "150",
+        "removeOlderPoints": "150",
+        "removeOlderUnit": "1",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 610,
+        "y": 20,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8f1ed978df031804",
+        "type": "ui_chart",
+        "z": "ee4b776865ae7776",
+        "name": "S2",
+        "group": "e73f65f7d1f41db4",
+        "order": 6,
+        "width": "0",
+        "height": "0",
+        "label": "S2",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "1023",
+        "removeOlder": "150",
+        "removeOlderPoints": "150",
+        "removeOlderUnit": "1",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 610,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6275fa18637d7a57",
+        "type": "debug",
+        "z": "ee4b776865ae7776",
+        "name": "debug 1",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 300,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "94c0a9e79d64c94f",
+        "type": "serial-port",
+        "name": "COM7",
+        "serialport": "COM7",
+        "serialbaud": "115200",
+        "databits": 8,
+        "parity": "none",
+        "stopbits": 1,
+        "waitfor": "",
+        "dtr": "none",
+        "rts": "none",
+        "cts": "none",
+        "dsr": "none",
+        "newline": "\\n",
+        "bin": "false",
+        "out": "char",
+        "addchar": "",
+        "responsetimeout": 10000
+    },
+    {
+        "id": "e73f65f7d1f41db4",
+        "type": "ui_group",
+        "name": "Default",
+        "tab": "e1b591a6eb58db20",
+        "order": 1,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "e1b591a6eb58db20",
+        "type": "ui_tab",
+        "name": "IR Dashboard",
+        "icon": "dashboard",
+        "order": 1
+    },
+    {
+        "id": "35b9c0b4fd7c8d18",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-node-serialport": "2.0.3",
+            "node-red-dashboard": "3.6.6"
+        }
+    }
+]
