@@ -39,3 +39,6 @@ Ejemplo:
 - Cálculo automático de umbral:
   threshold = (min + max) / 2
 - Clasificación binaria: LINEA / NO LINEA
+## Control de versiones
+Repositorio versionado con Git.
+Versiones etiquetadas: v0.1, v0.2.
